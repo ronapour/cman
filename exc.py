@@ -176,6 +176,6 @@ if __name__ != '__main__': raise Exception("exec!")
 
 try: run()
 except Exception as err:
-  raise err
+  raise err # TODO: comment out
   perr("there were errors: \n%s\n"%(repr(err)))
   sys.exit(1)
