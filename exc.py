@@ -23,13 +23,20 @@ def run():
     wmBuf = fSource.read()
   assert wmBuf!=None
 
-  clBuf = cleanWMs(wmBuf)
+  LICMAP = {}
+  clBuf = cleanWMs(wmBuf, LICMAP)
   assert len(wmBuf)==len(clBuf), [len(wmBuf), len(clBuf)]
+
+  perr(">> STATS:")
+  for lic in LICMAP:
+    print(">> %5s instances of %s"%(LICMAP[lic],lic))
 
   with open(fnameDest, 'xb') as fSave:
     fSave.write(clBuf)
 
-  perr("DONE: %s -> %s"%(fnameSource, fnameDest))
+  mm = ("DONE: %s -> %s"%(fnameSource, fnameDest))
+  perr(mm)
+  perr('-'*len(mm))
 
 def usage(message, nm):
   perr(message)
@@ -38,7 +45,7 @@ def usage(message, nm):
   perr("NOTE: <output.pdf> must be a \"new\" (i.e., non-existent) file so \n"+
        "      as to not overwrite anything by accident.")
 
-def cleanWMs(wmBuf):
+def cleanWMs(wmBuf,LICMAP):
   off = 0
   cleanChunks = []
   for m in re.finditer(BRX_WATMSUS,wmBuf):
@@ -55,7 +62,11 @@ def cleanWMs(wmBuf):
       continue
 
     assert cleaned!=None
-    perr("# LIC: %s"%(repr(decodeLic(licText))))
+    # perr("# LIC: %s"%(repr(decodeLic(licText))))
+
+    lic = decodeLic(licText)
+    if lic in LICMAP: LICMAP[lic]+=1
+    else: LICMAP[lic]=1
 
     actual = m.group(0)
     assert len(cleaned)==len(actual) # deja-vu
@@ -97,7 +108,7 @@ def tryDeWat(m):
 
   licAsHex = re.sub(BRX_WHANY,b'',lm.group(2))
   licAsEnc = bytes.fromhex(licAsHex.decode('latin-1','strict'))
-  perr("# LIC [%s]"%(decodeLic(licAsEnc)))
+  # perr("# LIC [%s]"%(decodeLic(licAsEnc)))
 
   dBufLicless = b''
   dBufLicless += lm.group(1)
